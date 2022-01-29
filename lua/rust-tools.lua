@@ -169,11 +169,11 @@ local function setup_root_dir()
 	end
 end
 
-function M.start_standalone_if_required()
+function M.start_standalone_if_required(bufnr)
 	local lsp_opts = config.options.server
-	local current_buf = vim.api.nvim_get_current_buf()
+	local current_buf = bufnr or vim.api.nvim_get_current_buf()
 
-	if lsp_opts.standalone and utils.is_bufnr_rust(current_buf) and (get_root_dir() == nil) then
+	if (lsp_opts and lsp_opts.standalone) and utils.is_bufnr_rust(current_buf) and (get_root_dir() == nil) then
 		require("rust-tools.standalone").start_standalone_client()
 	end
 end
@@ -197,6 +197,10 @@ function M.setup(opts)
 
 	if pcall(require, "dap") then
 		rt_dap.setup_adapter()
+	end
+
+	for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+		M.start_standalone_if_required(bufnr)
 	end
 end
 
